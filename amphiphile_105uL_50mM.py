@@ -8,9 +8,6 @@ Code for optimization of amphiphile experimentation with the opentrons
 from opentrons import protocol_api
 import pandas as pd
 
-# Initialize metadata
-metadata = {'apiLevel': '2.14'}
-
 # Function to extract volume from string
 def extract_volumes(values, solution):
     '''
@@ -63,7 +60,7 @@ def transfer_solution(pipette, plate, df, solution, tube):
     for (_, col_data) in df.iteritems():
 
         # Save volume to list
-        volumes = extract_volumes(col_data.values)
+        volumes = extract_volumes(col_data.values, solution)
 
         # Reformat
         for volume in volumes:
@@ -85,6 +82,10 @@ def transfer_solution(pipette, plate, df, solution, tube):
 
     # Drop tip
     pipette.drop_tip()
+
+
+# Initialize metadata
+metadata = {'apiLevel': '2.14'}
 
 # Function to run protocol
 def run(protocol: protocol_api.ProtocolContext):
