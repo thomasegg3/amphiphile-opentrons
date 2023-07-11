@@ -36,7 +36,7 @@ def extract_volumes(values, solution):
     return volumes
 
 # Function to transfer requisite volumes
-def transfer_solution(pipette, plate, df, solution, tube):
+def transfer_solution(pipette, plate, df, solution, source):
     '''
     Function to transfer variable volumes of solution to deepwell plate. This function
     is meant to handle single channel pipette.
@@ -45,7 +45,7 @@ def transfer_solution(pipette, plate, df, solution, tube):
     @param plate : deepwell plate
     @param df : dataframe containing specifications for deep well plate
     @param solution : solution of interest, MUST be the samne as in dataframe cells
-    @param solution_dict : dictionary of solutions and locations
+    @param source : source location
     '''
 
     # Pick up tips
@@ -73,12 +73,13 @@ def transfer_solution(pipette, plate, df, solution, tube):
     well_list = [val for i, val in enumerate(well_list) if i not in indices_to_remove]
 
     # Transfer liquid
-    pipette.transfer(
-        volume_data,
-        tube,
-        [plate.wells_by_name()[well_name] for well_name in plate.wells()],
-        new_tip='never'
-    )
+    pipette.aspirate(sum(volume_data), source, rate=2.0)
+    pipette.touch_tip(v_offset=-2,speed=100)  
+    
+    # Dispense liquid
+    for volume, well in zip(volume_data, well_list):
+
+        pipette.dispense(volume, plate[well], rate=2.0)
 
     # Drop tip
     pipette.drop_tip()
@@ -103,5 +104,5 @@ def run(protocol: protocol_api.ProtocolContext):
     df2 = pd.read_csv()
 
     # Distribution of Decanoic Acid - 1mM
-    transfer_solution(p300, W1, df1, 'D1')
-    transfer_solution(p300, W2, df2, 'D1')
+    transfer_solution(p300, W1, df1, 'D1', tube)
+    transfer_solution(p300, W2, df2, 'D1', tube)
